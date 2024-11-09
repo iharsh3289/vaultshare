@@ -23,51 +23,59 @@ In Render:
 5. Choose **Docker** as the environment.
 6. Use the default root directory and enable auto deploy for pushes to `main`.
 
-### 3. Use the Included `render.yaml`
+### 3. Get Render Deploy Hook URL
 
-Render will detect the `render.yaml` file at the repository root and use it to configure the service.
+In Render:
 
-The manifest includes:
+1. Open your web service dashboard.
+2. Go to Settings.
+3. Find the "Deploy Hook" section.
+4. Copy the deploy hook URL.
 
-- Docker runtime
-- environment variables for `PORT`, `VAULTSHARE_DATA_DIR`, `VAULTSHARE_UPLOAD_DIR`, and password settings
-- a persistent disk mounted at `/app/storage`
+### 4. Add GitHub Secret
 
-### 4. Set Environment Variables in Render
+In GitHub:
 
-Configure the following environment variables in the Render service settings:
-
-```text
-PORT=8080
-VAULTSHARE_DATA_DIR=/app/storage/data
-VAULTSHARE_UPLOAD_DIR=/app/storage/uploads
-VAULTSHARE_ENABLE_PASSWORD=true
-VAULTSHARE_PASSWORD=<your-secret-password>
-```
-
-If you want the service to run without site-level password protection, set:
+1. Open the repository.
+2. Go to `Settings`.
+3. Open `Secrets and variables` -> `Actions`.
+4. Add a repository secret:
 
 ```text
-VAULTSHARE_ENABLE_PASSWORD=false
+RENDER_DEPLOY_HOOK_URL
 ```
 
-### 5. Deploy and Verify
+Paste the deploy hook URL as the value.
 
-After connecting the repo and enabling auto deploy:
+### 5. Trigger Deployment
 
-1. Push to `main`.
-2. Render will build the Docker image and deploy the service.
-3. Verify the public URL in the Render dashboard.
+Push to `main`:
 
-### 6. Add the Render URL to `README.md`
+```bash
+git push origin main
+```
 
-After deployment, update the top of `README.md`:
+GitHub Actions will:
+
+1. Build the Maven project.
+2. Build the Docker image.
+3. If build succeeds, trigger Render deployment via the deploy hook.
+
+### 6. Add Live Demo Link
+
+After Render creates the public URL, update the top of `README.md`:
 
 ```md
 **Live Demo:** https://your-render-url.onrender.com
 ```
 
-Then commit and push the change.
+Then commit and push:
+
+```bash
+git add README.md
+git commit -m "docs: add live demo link"
+git push origin main
+```
 
 ## CI/CD Pipeline
 

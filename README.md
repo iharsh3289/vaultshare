@@ -121,7 +121,7 @@ GitHub Actions runs on pull requests and pushes to `main`:
 
 - Builds the Spring Boot application with Maven
 - Builds the Docker image
-- Verifies the project before Render deployment
+- Deploys to Render when `RENDER_DEPLOY_HOOK_URL` is configured and build succeeds
 
 Workflow: [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml)
 
