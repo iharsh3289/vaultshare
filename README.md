@@ -81,6 +81,12 @@ curl -F file=@file.txt -F auth=your-site-password http://localhost:8080
 
 ## Deploy
 
+### CI/CD
+
+GitHub Actions runs Maven packaging and Docker image builds on every pull request and push to `main`.
+
+When the `KOYEB_API_TOKEN` repository secret is configured, pushes to `main` also deploy the Dockerized service to Koyeb.
+
 ### Docker Host
 
 ```bash
@@ -96,6 +102,33 @@ docker run -p 8080:8080 \
 ### Render
 
 This repo includes `render.yaml`. Create a new Render Blueprint from the repository, then set `VAULTSHARE_PASSWORD` in the service environment.
+
+### Koyeb Free Deployment
+
+For a no-cost recruiter demo, deploy the Dockerfile-backed service on Koyeb's free instance and connect it to this GitHub repository.
+
+Required service settings:
+
+- Builder: Dockerfile
+- Port: `8080`
+- Route: `/`
+- Branch: `main`
+
+Recommended environment variables:
+
+```env
+PORT=8080
+VAULTSHARE_DATA_DIR=data
+VAULTSHARE_UPLOAD_DIR=uploads
+VAULTSHARE_ENABLE_PASSWORD=false
+VAULTSHARE_PASSWORD=change-this-before-deploy
+```
+
+To enable GitHub Actions deployment, create a Koyeb API token and add it to GitHub as:
+
+```text
+KOYEB_API_TOKEN
+```
 
 ## Project Structure
 
