@@ -1,0 +1,11 @@
+.git
+.github
+.vscode
+.idea
+uploads
+data/*.db
+*.db
+*.exe
+*.bat
+target
+*.log

@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: vaultshare
+    runtime: docker
+    envVars:
+      - key: VAULTSHARE_DATA_DIR
+        value: /app/storage/data
+      - key: VAULTSHARE_UPLOAD_DIR
+        value: /app/storage/uploads
+      - key: VAULTSHARE_ENABLE_PASSWORD
+        value: "true"
+      - key: VAULTSHARE_PASSWORD
+        sync: false
+    disk:
+      name: vaultshare-data
+      mountPath: /app/storage
+      sizeGB: 1

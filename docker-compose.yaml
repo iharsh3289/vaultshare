@@ -1,0 +1,25 @@
+services:
+  vaultshare:
+    build: .
+    container_name: vaultshare
+    restart: unless-stopped
+    ports:
+      - "${VAULTSHARE_HOST_PORT:-8080}:8080"
+    environment:
+      PORT: 8080
+      VAULTSHARE_DATA_DIR: /app/data
+      VAULTSHARE_UPLOAD_DIR: /app/uploads
+      VAULTSHARE_ENABLE_PASSWORD: "${VAULTSHARE_ENABLE_PASSWORD:-false}"
+      VAULTSHARE_PASSWORD: "${VAULTSHARE_PASSWORD:-}"
+    volumes:
+      - vaultshare-data:/app/data
+      - vaultshare-uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  vaultshare-data:
+  vaultshare-uploads:
