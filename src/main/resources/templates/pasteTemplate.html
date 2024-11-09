@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="/theme.css">
+	<link rel="stylesheet" href="/style.css">
+	<script src="/helper.js"></script>
+	<script>
+		function copy(){
+			copyToClipboard(document.getElementById("text").textContent)
+		}
+
+		function getRawLink(){
+			if(new URL(window.location.href).search.length > 0){
+				copyToClipboard(window.location.href + "&raw=1")
+			}else{
+				copyToClipboard(window.location.href + "?raw=1")
+			}
+		}
+	</script>
+</head>
+<body>
+	<div style="display: flex; flex-direction: column; align-items: center; gap: 10px; height: 100%; padding: 10px; box-sizing: border-box;">
+		<div style="justify-content: center; width: calc(100% - 20px); flex: 1; overflow: auto;">
+			<pre id="text" style="overflow: auto; word-break: normal; width: 100%; height: 100%; margin: 0">{{text}}</pre>
+		</div>
+		<div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+			<button onclick="copy()" style="width: 200px;">Copy all</button>
+			{{rawButton}}
+		</div>
+		<button onclick="window.location.href = '/'" style="width: 200px">New</button>
+	</div>
+</body>
+</html>
