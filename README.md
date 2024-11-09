@@ -4,7 +4,7 @@
 
 VaultShare is a Dockerized Java 21 Spring Boot service for ephemeral file, paste, and short-link sharing. It supports expiring resources, burn-after-open links, password-protected shares, SQLite metadata persistence, and GitHub Actions based CI/CD.
 
-**Live Demo:** Add the Koyeb URL here after first deploy  
+**Live Demo:** https://vaultshare-met1.onrender.com  
 **Repository:** https://github.com/iharsh3289/vaultshare
 
 ## Why This Project
@@ -21,7 +21,7 @@ VaultShare is designed as a compact production-style backend project: clear serv
 - Expiring links with scheduled cleanup
 - URL shortener behavior for valid `http://` or `https://` text uploads
 - SQLite-backed metadata storage
-- Docker, Docker Compose, Koyeb, and Render deployment support
+- Docker, Docker Compose, and Render deployment support
 
 ## Tech Stack
 
@@ -31,7 +31,7 @@ VaultShare is designed as a compact production-style backend project: clear serv
 - Maven
 - Docker
 - GitHub Actions
-- Koyeb free web service deployment
+- Render web service deployment
 
 ## Architecture
 
@@ -121,21 +121,22 @@ GitHub Actions runs on pull requests and pushes to `main`:
 
 - Builds the Spring Boot application with Maven
 - Builds the Docker image
-- Deploys to Koyeb when `KOYEB_API_TOKEN` is configured
+- Verifies the project before Render deployment
 
 Workflow: [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml)
 
 ## Deployment
 
-Recommended free public demo deployment: **Koyeb free instance**.
+Recommended free public demo deployment: **Render web service**.
 
 Quick setup:
 
 1. Push this repository to GitHub.
-2. Create a Koyeb API token.
-3. Add it to GitHub Actions secrets as `KOYEB_API_TOKEN`.
-4. Push to `main`.
-5. Copy the generated Koyeb public URL into the **Live Demo** line at the top of this README.
+2. Create a Render account and connect the repository.
+3. Add the included `render.yaml` to the repository root.
+4. Configure the Render web service to use Docker and the existing `render.yaml` manifest.
+5. Push to `main`.
+6. Copy the generated Render public URL into the **Live Demo** line at the top of this README.
 
 Full guide: [Deployment Guide](docs/DEPLOYMENT.md)
 
@@ -153,4 +154,4 @@ docs                              Architecture and deployment notes
 
 ## Notes
 
-Koyeb free instances are suitable for demos and hobby usage. Free deployments can scale to zero and do not provide durable attached volumes, so uploaded files should be treated as demo data. For production use, the next step would be external object storage and managed database persistence.
+Render free instances are suitable for demos and hobby usage. Free deployments can sleep after inactivity and do not provide durable attached volumes, so uploaded files should be treated as demo data. For production use, the next step would be external object storage and a managed database persistence.

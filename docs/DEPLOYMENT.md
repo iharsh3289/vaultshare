@@ -1,93 +1,88 @@
 # Deployment Guide
 
-This guide covers the recommended free deployment path for a public demo.
+This guide covers the recommended deployment path for Render using the included `render.yaml` manifest.
 
-## Recommended: Koyeb Free Instance
+## Recommended: Render Free Instance
 
-Koyeb can deploy this project directly from GitHub using the included Dockerfile.
+Render can deploy this project directly from GitHub using the included `render.yaml` file and the existing Dockerfile.
 
 ### 1. Push to GitHub
 
 ```bash
 git push origin main
-git push origin feature/koyeb-cicd docs/project-polish
 ```
 
-### 2. Create a Koyeb API Token
+### 2. Connect the Repository on Render
 
-In Koyeb:
+In Render:
 
-1. Open account or organization settings.
-2. Go to API access tokens.
-3. Create a token.
+1. Create or sign in to your Render account.
+2. Click **New** -> **Web Service**.
+3. Connect your GitHub repository.
+4. Select the `main` branch.
+5. Choose **Docker** as the environment.
+6. Use the default root directory and enable auto deploy for pushes to `main`.
 
-### 3. Add GitHub Secret
+### 3. Use the Included `render.yaml`
 
-In GitHub:
+Render will detect the `render.yaml` file at the repository root and use it to configure the service.
 
-1. Open the repository.
-2. Go to `Settings`.
-3. Open `Secrets and variables` -> `Actions`.
-4. Add a repository secret:
+The manifest includes:
+
+- Docker runtime
+- environment variables for `PORT`, `VAULTSHARE_DATA_DIR`, `VAULTSHARE_UPLOAD_DIR`, and password settings
+- a persistent disk mounted at `/app/storage`
+
+### 4. Set Environment Variables in Render
+
+Configure the following environment variables in the Render service settings:
 
 ```text
-KOYEB_API_TOKEN
-```
-
-### 4. Trigger Deployment
-
-Push to `main`:
-
-```bash
-git push origin main
-```
-
-GitHub Actions will:
-
-1. Build the Maven project.
-2. Build the Docker image.
-3. Deploy the app to Koyeb.
-
-### 5. Add Live Demo Link
-
-After Koyeb creates the public URL, update the top of `README.md`:
-
-```md
-**Live Demo:** https://your-koyeb-url.koyeb.app
-```
-
-Then commit and push:
-
-```bash
-git add README.md
-git commit -m "docs: add live demo link"
-git push origin main
-```
-
-## Koyeb Settings
-
-The GitHub Actions workflow uses:
-
-```text
-Builder: Docker
-Port: 8080
-Route: /
-Health check: /healthz
-Region: fra
-Instance type: free
-```
-
-Runtime environment:
-
-```env
 PORT=8080
-VAULTSHARE_DATA_DIR=/app/data
-VAULTSHARE_UPLOAD_DIR=/app/uploads
+VAULTSHARE_DATA_DIR=/app/storage/data
+VAULTSHARE_UPLOAD_DIR=/app/storage/uploads
+VAULTSHARE_ENABLE_PASSWORD=true
+VAULTSHARE_PASSWORD=<your-secret-password>
+```
+
+If you want the service to run without site-level password protection, set:
+
+```text
 VAULTSHARE_ENABLE_PASSWORD=false
 ```
 
-## Free Tier Notes
+### 5. Deploy and Verify
 
-The free deployment is intended for demos. Free instances may scale to zero after inactivity, and local disk should not be treated as durable production storage.
+After connecting the repo and enabling auto deploy:
 
-For production, use external object storage and a managed database.
+1. Push to `main`.
+2. Render will build the Docker image and deploy the service.
+3. Verify the public URL in the Render dashboard.
+
+### 6. Add the Render URL to `README.md`
+
+After deployment, update the top of `README.md`:
+
+```md
+**Live Demo:** https://your-render-url.onrender.com
+```
+
+Then commit and push the change.
+
+## CI/CD Pipeline
+
+The repository already includes GitHub Actions at `.github/workflows/ci-cd.yml`.
+
+That workflow:
+
+- builds the Spring Boot app with Maven
+- builds the Docker image
+- verifies every PR and `main` push
+
+Render deployment is handled by Render via the GitHub repo connection and `render.yaml` manifest. This means the project has both a GitHub build pipeline and Render auto-deploy for production.
+
+## Render Notes
+
+Render free instances are suitable for demos and hobby projects. Render may sleep idle services on the free tier, and attached disk storage should still be treated as demo persistence.
+
+For production use, consider external object storage and a managed database for critical data.
