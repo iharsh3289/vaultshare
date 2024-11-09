@@ -1,33 +1,55 @@
 # VaultShare
 
-VaultShare is a Java 21 and Spring Boot based ephemeral content sharing service for files, paste snippets, and short links. It stores metadata in SQLite and uploaded content on disk, with Docker-first deployment support for local, VPS, and PaaS environments.
+[![CI/CD](https://github.com/iharsh3289/vaultshare/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/iharsh3289/vaultshare/actions/workflows/ci-cd.yml)
+
+VaultShare is a Dockerized Java 21 Spring Boot service for ephemeral file, paste, and short-link sharing. It supports expiring resources, burn-after-open links, password-protected shares, SQLite metadata persistence, and GitHub Actions based CI/CD.
+
+**Live Demo:** Add the Koyeb URL here after first deploy  
+**Repository:** https://github.com/iharsh3289/vaultshare
+
+## Why This Project
+
+VaultShare is designed as a compact production-style backend project: clear service boundaries, Docker-first deployment, health checks, CI/CD automation, runtime configuration, and persistent metadata. It is intentionally small enough to review quickly, but complete enough to demonstrate backend ownership.
 
 ## Features
 
 - Upload files, multiple-file ZIP bundles, or text snippets
-- Optional password protection for the site and individual links
+- Generate short, shareable links
+- Optional password protection for individual links
+- Optional site-level upload protection
 - Burn-after-open links
-- Expiring links
-- URL shortener behavior for text uploads that contain a valid `http://` or `https://` URL
-- SQLite persistence
-- Docker and Docker Compose ready
-- Render deploy blueprint included
+- Expiring links with scheduled cleanup
+- URL shortener behavior for valid `http://` or `https://` text uploads
+- SQLite-backed metadata storage
+- Docker, Docker Compose, Koyeb, and Render deployment support
 
-## Run With Docker
+## Tech Stack
 
-```bash
-cp .env.example .env
-docker compose up --build
+- Java 21
+- Spring Boot 3
+- SQLite
+- Maven
+- Docker
+- GitHub Actions
+- Koyeb free web service deployment
+
+## Architecture
+
+```text
+Client
+  |
+  v
+Spring Boot Controller
+  |
+  +-- AuthService          site/session authentication
+  +-- StorageService       file, zip, and text persistence
+  +-- CryptoService        PBKDF2 + AES/CTR protected shares
+  +-- DataRepository       SQLite metadata access
+  +-- ExpirationService    scheduled cleanup
+  +-- TemplateService      server-rendered HTML responses
 ```
 
-Open `http://localhost:8080`.
-
-To enable site login, edit `.env`:
-
-```env
-VAULTSHARE_ENABLE_PASSWORD=true
-VAULTSHARE_PASSWORD=use-a-long-password
-```
+More detail: [Architecture Notes](docs/ARCHITECTURE.md)
 
 ## Run Locally
 
@@ -37,14 +59,28 @@ Java 21 and Maven are required.
 mvn spring-boot:run
 ```
 
-The app uses Docker volumes in Compose. When you run it directly on your machine, these local folders are used by default:
+Open:
 
-- `data/` for `settings.json` and `database.db`
-- `uploads/` for uploaded content
+```text
+http://localhost:8080
+```
+
+## Run With Docker
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+Open:
+
+```text
+http://localhost:8080
+```
 
 ## Configuration
 
-You can configure runtime paths and authentication with environment variables:
+Runtime configuration:
 
 ```env
 PORT=8080
@@ -54,7 +90,7 @@ VAULTSHARE_ENABLE_PASSWORD=false
 VAULTSHARE_PASSWORD=change-this-before-deploy
 ```
 
-App limits are stored in `data/settings.json`:
+Application limits are stored in `data/settings.json`:
 
 - `fileSizeLimitMB`
 - `textSizeLimitMB`
@@ -79,64 +115,42 @@ If site login is enabled:
 curl -F file=@file.txt -F auth=your-site-password http://localhost:8080
 ```
 
-## Deploy
+## CI/CD
 
-### CI/CD
+GitHub Actions runs on pull requests and pushes to `main`:
 
-GitHub Actions runs Maven packaging and Docker image builds on every pull request and push to `main`.
+- Builds the Spring Boot application with Maven
+- Builds the Docker image
+- Deploys to Koyeb when `KOYEB_API_TOKEN` is configured
 
-When the `KOYEB_API_TOKEN` repository secret is configured, pushes to `main` also deploy the Dockerized service to Koyeb.
+Workflow: [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml)
 
-### Docker Host
+## Deployment
 
-```bash
-docker build -t vaultshare .
-docker run -p 8080:8080 \
-  -e VAULTSHARE_ENABLE_PASSWORD=true \
-  -e VAULTSHARE_PASSWORD=use-a-long-password \
-  -v vaultshare-data:/app/data \
-  -v vaultshare-uploads:/app/uploads \
-  vaultshare
-```
+Recommended free public demo deployment: **Koyeb free instance**.
 
-### Render
+Quick setup:
 
-This repo includes `render.yaml`. Create a new Render Blueprint from the repository, then set `VAULTSHARE_PASSWORD` in the service environment.
+1. Push this repository to GitHub.
+2. Create a Koyeb API token.
+3. Add it to GitHub Actions secrets as `KOYEB_API_TOKEN`.
+4. Push to `main`.
+5. Copy the generated Koyeb public URL into the **Live Demo** line at the top of this README.
 
-### Koyeb Free Deployment
-
-For a no-cost recruiter demo, deploy the Dockerfile-backed service on Koyeb's free instance and connect it to this GitHub repository.
-
-Required service settings:
-
-- Builder: Dockerfile
-- Port: `8080`
-- Route: `/`
-- Branch: `main`
-
-Recommended environment variables:
-
-```env
-PORT=8080
-VAULTSHARE_DATA_DIR=data
-VAULTSHARE_UPLOAD_DIR=uploads
-VAULTSHARE_ENABLE_PASSWORD=false
-VAULTSHARE_PASSWORD=change-this-before-deploy
-```
-
-To enable GitHub Actions deployment, create a Koyeb API token and add it to GitHub as:
-
-```text
-KOYEB_API_TOKEN
-```
+Full guide: [Deployment Guide](docs/DEPLOYMENT.md)
 
 ## Project Structure
 
 ```text
 src/main/java/com/vaultshare      Java Spring Boot backend
-src/main/resources/static       Frontend assets
-src/main/resources/templates    HTML templates rendered by the backend
-src/main/resources/data         Default settings template
-data                            Runtime settings and SQLite database
-uploads                         Runtime uploads
+src/main/resources/static         Frontend assets
+src/main/resources/templates      HTML templates rendered by the backend
+src/main/resources/data           Default settings template
+data                              Runtime settings and SQLite database
+uploads                           Runtime uploads
+docs                              Architecture and deployment notes
 ```
+
+## Notes
+
+Koyeb free instances are suitable for demos and hobby usage. Free deployments can scale to zero and do not provide durable attached volumes, so uploaded files should be treated as demo data. For production use, the next step would be external object storage and managed database persistence.
